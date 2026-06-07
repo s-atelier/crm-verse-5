@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CRM S Atelier - Quản lý Khách hàng Nội thất</title>
+    <title>Pivo S Atelier - Quản lý Khách hàng Nội thất</title>
     <!-- PWA -->
     <link rel="manifest" href="manifest.json">
     <meta name="mobile-web-app-capable" content="yes">
@@ -107,7 +107,7 @@
                     <i class="fa-solid fa-couch text-2xl"></i>
                 </div>
                 <div>
-                    <h2 class="font-bold text-2xl tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-teal-400">CRM S ATELIER</h2>
+                    <h2 class="font-bold text-2xl tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-teal-400">Pivo S ATELIER</h2>
                     <p class="text-xs text-slate-400 mt-1">Đăng nhập để vào hệ thống quản lý dữ liệu</p>
                 </div>
             </div>
@@ -220,7 +220,7 @@
                         <div class="bg-cyan-500 text-slate-950 p-2 rounded-lg">
                             <i class="fa-solid fa-couch text-sm"></i>
                         </div>
-                        <span class="font-bold text-sm tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-teal-400">S ATELIER CRM</span>
+                        <span class="font-bold text-sm tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-teal-400">S ATELIER Pivo</span>
                     </div>
                     <button onclick="toggleMobileSidebar()" class="text-slate-400 hover:text-slate-200 text-lg">
                         <i class="fa-solid fa-xmark"></i>
@@ -609,7 +609,7 @@
                             <span><strong>Quan trọng:</strong> Nếu đã deploy trước đây, bạn cần <strong>copy lại code mới bên dưới</strong> và <strong>deploy lại (New deployment)</strong> để tính năng Nhật Ký Hành Động hoạt động. Sheet "Nhật Ký Hành Động" sẽ được tự động tạo khi có thao tác đầu tiên.</span>
                         </div>
                         <div class="space-y-3 text-xs leading-relaxed">
-                            <p><strong>Bước 1:</strong> Tạo một file Google Sheets mới (Đặt tên: CRM S Atelier).</p>
+                            <p><strong>Bước 1:</strong> Tạo một file Google Sheets mới (Đặt tên: Pivo S ATELIER).</p>
                             <p><strong>Bước 2:</strong> Vào menu <strong>Tiện ích mở rộng (Extensions)</strong> ➔ Chọn <strong>Apps Script</strong>.</p>
                             <p><strong>Bước 3:</strong> Xóa sạch code cũ, copy đoạn mã bên dưới và dán vào. <span class="text-amber-400 font-semibold">⚠ Phải dùng code mới nhất này.</span></p>
                             <p><strong>Bước 4:</strong> Nhấn <strong>Triển khai (Deploy)</strong> ➔ Chọn <strong>Triển khai mới (New deployment)</strong>.</p>
@@ -2535,7 +2535,7 @@ function buildResponse(data) {
                 return;
             }
 
-            const text = "🛎️ <b>THÔNG BÁO TEST HỆ THỐNG</b>\n\nHệ thống CRM S Atelier đã kết nối thành công với nhóm của bạn! Sẵn sàng nhận thông báo tự động.";
+            const text = "🛎️ <b>THÔNG BÁO TEST HỆ THỐNG</b>\n\nHệ thống Pivo S Atelier đã kết nối thành công với nhóm của bạn! Sẵn sàng nhận thông báo tự động.";
             
             fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
                 method: "POST",
