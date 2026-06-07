@@ -108,7 +108,7 @@
             <form id="login-form" onsubmit="handleLogin(event)" class="flex flex-col gap-4 text-sm">
                 <div class="flex flex-col gap-1.5">
                     <label class="text-xs font-semibold text-slate-300">Tài khoản</label>
-                    <input type="text" id="login-username" required placeholder="Ví dụ: admin hoặc sales1" class="bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                    <input type="text" id="login-username" required placeholder="Ví dụ: admin hoặc sale1" class="bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500">
                 </div>
                 <div class="flex flex-col gap-1.5">
                     <label class="text-xs font-semibold text-slate-300">Mật khẩu</label>
@@ -1092,7 +1092,10 @@
         const defaultAccounts = [
             { username: "admin", password: "12345", fullname: "Quản Trị Viên", role: "Admin" },
             { username: "sale1", password: "1234", fullname: "Nhân viên kinh doanh 1", role: "Sales" },
-            { username: "giamsat1", password: "1234", fullname: "Người giám sát 1", role: "Giám sát" }
+            { username: "giamsat1", password: "1234", fullname: "Người giám sát 1", role: "Giám sát" },
+             { username: "giamsat2", password: "1234", fullname: "Người giám sát 2", role: "Giám sát" },
+             { username: "kythuat1", password: "1234", fullname: "Kỹ thuật 1", role: "Kỹ thuật" },
+            { username: "kythuat2", password: "1234", fullname: "Kỹ thuật 2", role: "Kỹ thuật" }
         ];
 
         // Google Apps Script source code shown in UI
