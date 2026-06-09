@@ -817,6 +817,17 @@
         <span id="toast-text" class="text-sm font-semibold">Thông báo thành công</span>
     </div>
 
+    <!-- UPDATE BANNER -->
+    <div id="update-banner" class="hidden fixed top-0 left-0 right-0 z-[9999] flex items-center justify-between gap-3 bg-amber-400 text-slate-900 px-4 py-2.5 shadow-lg">
+        <div class="flex items-center gap-2 text-sm font-semibold">
+            <i class="fa-solid fa-rotate text-base"></i>
+            <span>Có phiên bản mới — vui lòng cập nhật để tiếp tục sử dụng.</span>
+        </div>
+        <button onclick="doAppUpdate()" class="flex items-center gap-1.5 bg-slate-900 text-amber-300 text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-slate-800 transition-colors shrink-0">
+            <i class="fa-solid fa-arrow-rotate-right"></i> Cập nhật ngay
+        </button>
+    </div>
+
     <!-- NOTES MODAL (POPUP) -->
     <div id="notes-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4 overflow-y-auto">
         <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-xl shadow-2xl flex flex-col max-h-[90vh]">
@@ -1104,6 +1115,10 @@
         //  ⚙️  CẤU HÌNH CHUNG — Admin điền 1 lần, gửi file đi là xong
         //  Thành viên mở file lên sẽ tự lấy cấu hình này, không cần tự nhập
         // ============================================================
+        // ── Phiên bản build — đổi giá trị này mỗi lần deploy ──
+        const APP_VERSION = "20250609-001";
+        // ============================================================
+
         const APP_CONFIG = {
             // Google Sheets Web App URL (bắt buộc để đồng bộ dữ liệu)
             sheetUrl: "https://script.google.com/macros/s/AKfycbx6_3zo0TI--vhvnQmMygucOKfLvOWUeySXTHQVIz-5_1Pf9iDfpBaVIMXAy3qBv9gKgA/exec",          // Ví dụ: "https://script.google.com/macros/s/AKfy.../exec"
@@ -1117,6 +1132,67 @@
             driveFolderId: "1Qt9LqYPUCgsPP6kHxpHdiKdx6MMcka2v",     // Ví dụ: "1Qt9LqYPUCgsPP6kHxpHdiKdx6MMcka2v"
         };
         // ============================================================
+
+        // Default Mock Data
+        const defaultCustomers = [
+            {
+                id: "CUST-001",
+                name: "Nguyễn Văn Anh",
+                phone: "0901234567",
+                address: "Căn hộ 1205 - Goldmark City, 136 Hồ Tùng Mậu, Hà Nội",
+                source: "Facebook Ads",
+                sales: "Đỗ Minh Anh",
+                gu: "Hiện đại tối giản (Minimalism), tông trắng và gỗ sồi ấm áp.",
+                categories: "Phòng khách, Phòng bếp",
+                budget: 150000000,
+                actualValue: 145000000,
+                contactDate: "2026-06-01T08:30",
+                startDate: "2026-06-01T08:45",
+                surveyDate: "2026-06-03",
+                depositDate: "2026-06-04",
+                installDate: "2026-06-15",
+                notes: "Khách thích cốt gỗ MDF An Cường, bề mặt phủ Melamine. Đã ký hợp đồng thiết kế ngày 4/6.",
+                status: "4. Đã chốt cọc"
+            },
+            {
+                id: "CUST-002",
+                name: "Trần Thị Kim Oanh",
+                phone: "0987654321",
+                address: "Shophouse 12A - Vinhomes Ocean Park, Gia Lâm",
+                source: "Website/SEO",
+                sales: "Lê Quốc Bảo",
+                gu: "Tân cổ điển sang trọng, mạ vàng và mặt đá vân mây.",
+                categories: "Phòng khách, 3 Phòng ngủ",
+                budget: 450000000,
+                actualValue: 430000000,
+                contactDate: "2026-06-02T14:10",
+                startDate: "2026-06-02T15:30",
+                surveyDate: "2026-06-05",
+                depositDate: "2026-06-07",
+                installDate: "2026-06-28",
+                notes: "Đang chờ xưởng hoàn thành sản xuất khung xương để đưa hàng đi lắp đặt.",
+                status: "5. Chờ sản xuất"
+            },
+            {
+                id: "CUST-003",
+                name: "Phạm Hữu Hoàng",
+                phone: "0912345678",
+                address: "Biệt thự số 5, dãy B - Gamuda Gardens, Hoàng Mai",
+                source: "Lời giới thiệu",
+                sales: "Đỗ Minh Anh",
+                gu: "Phù hợp phong thủy, phong cách Japandi ấm cúng kết hợp cây xanh.",
+                categories: "Thi công trọn gói",
+                budget: 800000000,
+                actualValue: 0,
+                contactDate: "2026-06-04T09:00",
+                startDate: "",
+                surveyDate: "",
+                depositDate: "",
+                installDate: "",
+                notes: "Đã liên hệ qua Zalo gửi catalog, chưa sắp xếp được lịch gặp mặt.",
+                status: "1. Đang tư vấn sơ bộ"
+            }
+        ];
 
         // Default Mock Accounts
         const defaultAccounts = [
@@ -3876,15 +3952,63 @@ function buildResponse(data) {
 
     </script>
 
-    <!-- PWA: Đăng ký Service Worker -->
+    <!-- PWA: Đăng ký Service Worker + auto-update -->
     <script>
+        // Hard-reload sạch: unregister SW, xóa cache, reload
+        function doAppUpdate() {
+            if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                navigator.serviceWorker.getRegistrations().then(regs => {
+                    Promise.all(regs.map(r => r.unregister())).then(() => {
+                        if ('caches' in window) {
+                            caches.keys().then(keys =>
+                                Promise.all(keys.map(k => caches.delete(k))).then(() => window.location.reload(true))
+                            );
+                        } else {
+                            window.location.reload(true);
+                        }
+                    });
+                });
+            } else {
+                window.location.reload(true);
+            }
+        }
+
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
                     .then(() => console.log('[PWA] Service Worker đã đăng ký'))
                     .catch(e => console.warn('[PWA] Lỗi Service Worker:', e));
             });
+
+            // SW mới activate → tự reload (dành cho PWA installed)
+            navigator.serviceWorker.addEventListener('message', event => {
+                if (event.data && event.data.type === 'SW_UPDATED') {
+                    console.log('[PWA] Phiên bản mới — đang tải lại...');
+                    window.location.reload();
+                }
+            });
         }
+
+        // Polling version check (dành cho browser tab thường) — mỗi 5 phút
+        function extractVersion(html) {
+            const m = html.match(/const\s+APP_VERSION\s*=\s*"([^"]+)"/);
+            return m ? m[1] : null;
+        }
+        function checkForUpdate() {
+            fetch(window.location.pathname + '?_cb=' + Date.now(), {
+                cache: 'no-store', headers: { 'Cache-Control': 'no-cache' }
+            })
+            .then(r => r.text())
+            .then(html => {
+                const remote = extractVersion(html);
+                if (remote && remote !== APP_VERSION) {
+                    document.getElementById('update-banner').classList.remove('hidden');
+                    document.body.style.paddingTop = '44px';
+                }
+            })
+            .catch(() => {});
+        }
+        setTimeout(() => { checkForUpdate(); setInterval(checkForUpdate, 5 * 60 * 1000); }, 30 * 1000);
     </script>
 </body>
 </html>
