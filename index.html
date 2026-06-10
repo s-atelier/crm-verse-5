@@ -1525,7 +1525,7 @@ function buildResponse(data) {
             } catch(e) { /* already initialized */ }
 
             const messaging = firebase.messaging();
-            const VAPID_KEY = 'BIZIMeIGby432KzNk4Ge7GhHriJR2jrJZQzLG2Lw5_f9MdmOKlKpCwd4-YTtRjJNM5oIM3XONAOPrdXg07XiYkk';
+            const VAPID_KEY = 'BIZIMeIGby432KzNk4Ge7GhHriJR2jrJZQzLG2Lw5_f9Mdm0KlKpCwd4-YTtRjJNM5oIM3XONA0PrdXg07XiYkk';
             const token = await messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
 
             if (!token) { showToast('Không lấy được token — thử reload trang', 'error'); return; }
