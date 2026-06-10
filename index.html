@@ -1497,29 +1497,68 @@ function buildResponse(data) {
         //         "Xóa ghi chú" | "Hoàn thành ghi chú" | "Thêm file" | "Đăng nhập" | "Đăng xuất"
         // page: trang / phân hệ đang thao tác
         // Test kết nối nhật ký hành động
-        function requestFcmPermission() {
-            if (!('Notification' in window)) { showToast('Trình duyệt không hỗ trợ thông báo', 'error'); return; }
-            Notification.requestPermission().then(permission => {
-                if (permission === 'granted') {
-                    showToast('Đã cấp quyền! Đang lấy token...', 'success');
-                    setTimeout(() => {
-                        const token = localStorage.getItem('fcm_token');
-                        const d1 = document.getElementById('fcm-token-display');
-                        const d2 = document.getElementById('fcm-token-display2');
-                        if (token) {
-                            if (d1) d1.textContent = token;
-                            if (d2) d2.textContent = token;
-                            showToast('Đã có FCM token!', 'success');
-                        } else {
-                            showToast('Reload lại trang để lấy token', 'info');
-                        }
-                    }, 3000);
-                } else {
-                    showToast('Bị từ chối — vào cài đặt trình duyệt để bật lại', 'error');
-                }
-            });
-        }
+       function requestFcmPermission() {
+    if (!('Notification' in window)) {
+        showToast('Trình duyệt không hỗ trợ thông báo', 'error'); return;
+    }
+    if (!('serviceWorker' in navigator)) {
+        showToast('Cần HTTPS và Service Worker để nhận push', 'error'); return;
+    }
 
+    navigator.serviceWorker.ready.then(async reg => {
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+            showToast('Bị từ chối — vào cài đặt trình duyệt để bật lại', 'error'); return;
+        }
+        showToast('Đã cấp quyền! Đang lấy FCM token...', 'success');
+        try {
+            // Init Firebase nếu chưa
+            try {
+                firebase.initializeApp({
+                    apiKey: "AIzaSyCbX1EryC_4pmRpQ-F6sXUkSG6iLoUqFvM",
+                    authDomain: "pivo-crm.firebaseapp.com",
+                    projectId: "pivo-crm",
+                    storageBucket: "pivo-crm.firebasestorage.app",
+                    messagingSenderId: "626098511075",
+                    appId: "1:626098511075:web:26f91253d17c95f44d79d6"
+                });
+            } catch(e) { /* already initialized */ }
+
+            const messaging = firebase.messaging();
+            const VAPID_KEY = 'BIZIMeIGby432KzNk4Ge7GhHriJR2jrJZQzLG2Lw5_f9MdmOKlKpCwd4-YTtRjJNM5oIM3XONAOPrdXg07XiYkk';
+            const token = await messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
+
+            if (!token) { showToast('Không lấy được token — thử reload trang', 'error'); return; }
+
+            // Lưu local
+            localStorage.setItem('fcm_token', token);
+            ['fcm-token-display','fcm-token-display2'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = token;
+            });
+
+            // Đăng ký lên Sheet
+            const sheetUrl = getConfig('crm_sheet_url', 'sheetUrl');
+            if (sheetUrl) {
+                const fd = new FormData();
+                fd.append('payload', JSON.stringify({
+                    action: 'register_token',
+                    token: token,
+                    user: currentUser ? currentUser.fullname : 'unknown',
+                    userAgent: navigator.userAgent
+                }));
+                fetch(sheetUrl, { method: 'POST', body: fd })
+                    .then(() => showToast('✅ Token đã đăng ký lên Sheet!', 'success'))
+                    .catch(() => showToast('Token lấy OK nhưng chưa lưu được lên Sheet', 'error'));
+            } else {
+                showToast('✅ Có token nhưng chưa cấu hình Sheet URL', 'info');
+            }
+        } catch(err) {
+            console.error('[FCM] Lỗi:', err);
+            showToast('Lỗi lấy token: ' + err.message, 'error');
+        }
+    });
+}
         function copyFcmToken() {
             const token = localStorage.getItem('fcm_token');
             if (!token) { showToast('Chưa có FCM token', 'error'); return; }
