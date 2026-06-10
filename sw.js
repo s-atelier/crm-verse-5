@@ -146,4 +146,48 @@ self.addEventListener('notificationclick', event => {
       return self.clients.openWindow('./');
     })
   );
+})
+  
+// Nhận push từ FCM (background / app bị đóng)
+self.addEventListener('push', function(event) {
+    let payload = {};
+    try {
+        payload = event.data ? event.data.json() : {};
+    } catch(e) {
+        payload = { notification: { title: 'Pivo CRM', body: event.data ? event.data.text() : '' } };
+    }
+
+    const notification = payload.notification || {};
+    const title = notification.title || payload.title || 'Pivo CRM';
+    const body  = notification.body  || payload.body  || '';
+    const data  = payload.data || {};
+
+    event.waitUntil(
+        self.registration.showNotification(title, {
+            body: body,
+            icon: './icon-192.png',
+            badge: './icon-192.png',
+            tag: 'pivo-push-' + Date.now(),
+            data: data,
+            vibrate: [200, 100, 200],
+            requireInteraction: false
+        })
+    );
 });
+
+// Khi người dùng bấm vào notification → mở app / focus tab
+self.addEventListener('notificationclick', function(event) {
+    event.notification.close();
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
+            // Nếu app đang mở → focus vào
+            for (var i = 0; i < clientList.length; i++) {
+                var client = clientList[i];
+                if ('focus' in client) return client.focus();
+            }
+            // Nếu app chưa mở → mở tab mới
+            if (clients.openWindow) return clients.openWindow('./');
+        })
+    );
+});
+
