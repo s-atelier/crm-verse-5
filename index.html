@@ -1165,12 +1165,12 @@
         //  Thành viên mở file lên sẽ tự lấy cấu hình này, không cần tự nhập
         // ============================================================
         // ── Phiên bản build — đổi chuỗi này mỗi lần deploy (giống CACHE_NAME trong sw.js) ──
-        const APP_VERSION = "pivo-20260610-1010";
+        const APP_VERSION = "pivo-20260610-0509";
         // ============================================================
 
         const APP_CONFIG = {
             // Google Sheets Web App URL (bắt buộc để đồng bộ dữ liệu)
-            sheetUrl: "https://script.google.com/macros/s/AKfycbykV2dvqdJhmXkQy90EE3SgtPWF3aEf2alxH1OSzg8RPVdoHdQx3obgw5dSN9nwUXW_Jw/exec",          // Ví dụ: "https://script.google.com/macros/s/AKfy.../exec"
+            sheetUrl: "https://script.google.com/macros/s/AKfycbyAV4N3cruc3-0Ix8KssSregI-F4Zc5ctPfIy8dXRuLJhfIB9oaosCasPCDPrpJmrx60A/exec",          // Ví dụ: "https://script.google.com/macros/s/AKfy.../exec"
 
             // Telegram Bot Token & Chat ID (để nhận thông báo tự động)
             telegramToken:  "8602724932:AAFDps6gbW0KuOzv2ZxiWAZ8UXrmi9oWzLI",    // Ví dụ: "123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ"
@@ -1497,27 +1497,46 @@ function buildResponse(data) {
         //         "Xóa ghi chú" | "Hoàn thành ghi chú" | "Thêm file" | "Đăng nhập" | "Đăng xuất"
         // page: trang / phân hệ đang thao tác
         // Test kết nối nhật ký hành động
-        function requestFcmPermission() {
+        async function requestFcmPermission() {
             if (!('Notification' in window)) { showToast('Trình duyệt không hỗ trợ thông báo', 'error'); return; }
-            Notification.requestPermission().then(permission => {
-                if (permission === 'granted') {
-                    showToast('Đã cấp quyền! Đang lấy token...', 'success');
-                    setTimeout(() => {
-                        const token = localStorage.getItem('fcm_token');
-                        const d1 = document.getElementById('fcm-token-display');
-                        const d2 = document.getElementById('fcm-token-display2');
-                        if (token) {
-                            if (d1) d1.textContent = token;
-                            if (d2) d2.textContent = token;
-                            showToast('Đã có FCM token!', 'success');
-                        } else {
-                            showToast('Reload lại trang để lấy token', 'info');
-                        }
-                    }, 3000);
-                } else {
+            const btn = document.getElementById('btn-request-fcm');
+            if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang lấy...';
+            try {
+                const permission = await Notification.requestPermission();
+                if (permission !== 'granted') {
                     showToast('Bị từ chối — vào cài đặt trình duyệt để bật lại', 'error');
+                    if (btn) btn.innerHTML = '<i class="fa-solid fa-bell-slash"></i> Kích hoạt thông báo';
+                    return;
                 }
-            });
+                const reg = await navigator.serviceWorker.ready;
+                try { firebase.initializeApp({
+                    apiKey: "AIzaSyCbX1EryC_4pmRpQ-F6sXUkSG6iLoUqFvM",
+                    authDomain: "pivo-crm.firebaseapp.com",
+                    projectId: "pivo-crm",
+                    storageBucket: "pivo-crm.firebasestorage.app",
+                    messagingSenderId: "626098511075",
+                    appId: "1:626098511075:web:26f91253d17c95f44d79d6"
+                }); } catch(e) {}
+                const messaging = firebase.messaging();
+                const VAPID_KEY = 'BIZIMeIGby432KzNk4Ge7GhHriJR2jrJZQzLG2Lw5_f9Mdm0KlKpCwd4-YTtRjJNM5oIM3XONA0PrdXg07XiYkk';
+                const token = await messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
+                if (token) {
+                    localStorage.setItem('fcm_token', token);
+                    const d1 = document.getElementById('fcm-token-display');
+                    const d2 = document.getElementById('fcm-token-display2');
+                    if (d1) d1.textContent = token;
+                    if (d2) d2.textContent = token;
+                    showToast('Đã lấy FCM token thành công!', 'success');
+                    if (btn) btn.innerHTML = '<i class="fa-solid fa-bell"></i> Đã kích hoạt';
+                } else {
+                    showToast('Không lấy được token', 'error');
+                    if (btn) btn.innerHTML = '<i class="fa-solid fa-bell-slash"></i> Kích hoạt thông báo';
+                }
+            } catch(err) {
+                console.error('[FCM] requestFcmPermission lỗi:', err);
+                showToast('Lỗi: ' + err.message, 'error');
+                if (btn) btn.innerHTML = '<i class="fa-solid fa-bell-slash"></i> Kích hoạt thông báo';
+            }
         }
 
         function copyFcmToken() {
@@ -4169,7 +4188,7 @@ function buildResponse(data) {
                         }); } catch(e) { /* already initialized */ }
 
                         const messaging = firebase.messaging();
-                        const VAPID_KEY = 'BIZIMeIGby432KzNk4Ge7GhHriJR2jrJZQzLG2Lw5_f9MdmOKlKpCwd4-YTtRjJNM5oIM3XONAOPrdXg07XiYkk';
+                        const VAPID_KEY = 'BIZIMeIGby432KzNk4Ge7GhHriJR2jrJZQzLG2Lw5_f9Mdm0KlKpCwd4-YTtRjJNM5oIM3XONA0PrdXg07XiYkk';
 
                         const permission = await Notification.requestPermission();
                         if (permission === 'granted') {
